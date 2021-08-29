@@ -50,7 +50,8 @@ func main() {
 			break
 		}
 	}
-	fmt.Println(res)
+
+	printResult(res)
 }
 
 func getOption(opt *Option) {
@@ -96,4 +97,11 @@ func sendrecv(addr string, count int, ch chan BenchResult) (BenchResult, error) 
 	ch <- result
 
 	return result, nil
+}
+
+func printResult(opt BenchResult) {
+	fmt.Printf("Total request count : %d\n", opt.Count)
+	fmt.Printf("Total request time : %v\n", opt.TotalTime)
+	fmt.Printf("Time per packets : %v\n", opt.TotalTime/time.Duration(opt.Count))
+	fmt.Printf("Failed count : %d\n", opt.Failed)
 }
