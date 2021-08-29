@@ -3,10 +3,12 @@ package main
 import (
 	"fmt"
 	"net"
+	"strconv"
 	"sync"
 	"time"
 
 	"github.com/google/uuid"
+	flag "github.com/spf13/pflag"
 )
 
 type BenchResult struct {
@@ -16,14 +18,25 @@ type BenchResult struct {
 	TotalTime            time.Duration
 }
 
+type Option struct {
+	Parallelism int
+	Count       int
+	Address     string
+	Port        int
+}
+
 func main() {
 	var wait sync.WaitGroup
 	var res BenchResult
+	var opt Option
+
+	getOption(&opt)
 	c := make(chan BenchResult)
-	for i := 0; i < 10; i++ {
+
+	for i := 0; i < opt.Parallelism; i++ {
 		wait.Add(1)
 		go func() {
-			_, _ = sendrecv(10, c)
+			_, _ = sendrecv(opt.Address+":"+strconv.Itoa(opt.Port), opt.Count, c)
 		}()
 	}
 
@@ -40,9 +53,17 @@ func main() {
 	fmt.Println(res)
 }
 
-func sendrecv(count int, ch chan BenchResult) (BenchResult, error) {
+func getOption(opt *Option) {
+	flag.IntVar(&opt.Parallelism, "parallelism", 10, "Worker parallelism number")
+	flag.IntVar(&opt.Count, "count", 10, "Number of request from a worker")
+	flag.StringVar(&opt.Address, "address", "127.0.0.1", "Server IP address")
+	flag.IntVar(&opt.Port, "port", 8080, "Server port")
+	flag.Parse()
+}
+
+func sendrecv(addr string, count int, ch chan BenchResult) (BenchResult, error) {
 	var result BenchResult
-	conn, err := net.Dial("udp", "0.0.0.0:8080")
+	conn, err := net.Dial("udp", addr)
 	if err != nil {
 		return result, err
 	}
