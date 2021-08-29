@@ -43,7 +43,7 @@ func main() {
 		res.TotalTime += r.TotalTime
 		res.Failed += r.Failed
 		res.TransferreddByteSize += r.TransferreddByteSize
-		if res.Count >= 100 {
+		if res.Count >= opt.Parallelism*opt.Count {
 			break
 		}
 	}
