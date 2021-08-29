@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net"
 	"strconv"
-	"sync"
 	"time"
 
 	"github.com/google/uuid"
@@ -26,7 +25,6 @@ type Option struct {
 }
 
 func main() {
-	var wait sync.WaitGroup
 	var res BenchResult
 	var opt Option
 
@@ -34,7 +32,6 @@ func main() {
 	c := make(chan BenchResult)
 
 	for i := 0; i < opt.Parallelism; i++ {
-		wait.Add(1)
 		go func() {
 			_, _ = sendrecv(opt.Address+":"+strconv.Itoa(opt.Port), opt.Count, c)
 		}()
