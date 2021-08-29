@@ -12,6 +12,7 @@ import (
 type BenchResult struct {
 	TransferreddByteSize int
 	Count                int
+	Failed               int
 	TotalTime            time.Duration
 }
 
@@ -30,6 +31,7 @@ func main() {
 		r := <-c
 		res.Count += r.Count
 		res.TotalTime += r.TotalTime
+		res.Failed += r.Failed
 		res.TransferreddByteSize += r.TransferreddByteSize
 		if res.Count >= 100 {
 			break
@@ -48,19 +50,26 @@ func sendrecv(count int, ch chan BenchResult) (BenchResult, error) {
 	for i := 0; i < count; i++ {
 		uuid := uuid.NewString()
 		s := time.Now()
+
 		_, err := conn.Write([]byte(uuid))
 		if err != nil {
 			return result, err
 		}
 
 		buf := make([]byte, 512)
-		_, err = conn.Read(buf)
+		n, err := conn.Read(buf)
 		if err != nil {
 			return result, err
 		}
 		e := time.Now()
+
 		result.Count++
 		result.TotalTime += e.Sub(s)
+
+		// Verify response
+		if string(buf[:n]) != uuid {
+			result.Failed++
+		}
 	}
 
 	ch <- result
