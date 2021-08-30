@@ -20,4 +20,4 @@ pflag: help requested
 
 ## Example server
 
-~~See [example]()~~
+See [example](example)
